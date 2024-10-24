@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
-import cv2
 from pyzbar.pyzbar import decode
+from PIL import Image
 import numpy as np
 
 # Sample product database (In a real application, this would come from a database)
@@ -26,24 +26,24 @@ def calculate_total(cart):
 
 # Function to decode barcode from image
 def decode_barcode(image):
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    barcodes = decode(gray_image)
+    barcodes = decode(image)
     return [barcode.data.decode('utf-8') for barcode in barcodes]
 
 # Streamlit UI
 st.title("Smart Trolley Billing System")
 
-# Use camera input for scanning
-st.header("Scan Product")
-image_file = st.camera_input("Take a picture of the product barcode")
+# Use file upload for scanning
+st.header("Upload Product Barcode Image")
+image_file = st.file_uploader("Choose an image...", type=["jpg", "png", "jpeg"])
 
-if image_file:
-    # Convert the image to an array
-    img = cv2.imdecode(np.frombuffer(image_file.read(), np.uint8), 1)
-    
+if image_file is not None:
+    # Open the image
+    image = Image.open(image_file)
+    image = np.array(image)
+
     # Decode the barcode
-    barcodes = decode_barcode(img)
-    
+    barcodes = decode_barcode(image)
+
     if barcodes:
         # Check if the scanned barcode corresponds to a product
         scanned_barcode = barcodes[0]  # Take the first barcode found
